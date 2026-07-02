@@ -21,8 +21,13 @@ class Settings(BaseSettings):
 
     # Shopify Configuration
     SHOPIFY_STORE_URL: str = Field(default="your-store-name.myshopify.com", env="SHOPIFY_STORE_URL")
-    SHOPIFY_ACCESS_TOKEN: str = Field(default="", env="SHOPIFY_ACCESS_TOKEN")
     SHOPIFY_API_VERSION: str = Field(default="2024-07", env="SHOPIFY_API_VERSION")
+    # Static Admin API token (custom app flow). Leave blank if using client-credentials below.
+    SHOPIFY_ACCESS_TOKEN: str = Field(default="", env="SHOPIFY_ACCESS_TOKEN")
+    # Client-credentials grant (Dev Dashboard app flow) - token is fetched and refreshed
+    # automatically since it expires roughly every 24 hours.
+    SHOPIFY_CLIENT_ID: str = Field(default="", env="SHOPIFY_CLIENT_ID")
+    SHOPIFY_CLIENT_SECRET: str = Field(default="", env="SHOPIFY_CLIENT_SECRET")
 
     # AI Keys
     GROQ_API_KEY: str = Field(default="", env="GROQ_API_KEY")
