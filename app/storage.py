@@ -3,6 +3,7 @@ import os
 import uuid
 import logging
 import boto3
+import httpx
 from PIL import Image
 from botocore.exceptions import ClientError
 from app.config import settings
@@ -52,13 +53,41 @@ def optimize_image(raw_bytes: bytes) -> bytes:
     image.convert("RGB").save(output_buffer, format="JPEG", quality=85)
     return output_buffer.getvalue()
 
+def upload_to_supabase(optimized_bytes: bytes, filename: str) -> str:
+    """
+    Uploads optimized image bytes to a Supabase Storage bucket via its REST API
+    and returns the public object URL.
+    """
+    upload_url = f"{settings.SUPABASE_URL.rstrip('/')}/storage/v1/object/{settings.SUPABASE_STORAGE_BUCKET}/{filename}"
+    headers = {
+        "Authorization": f"Bearer {settings.SUPABASE_SERVICE_KEY}",
+        "apikey": settings.SUPABASE_SERVICE_KEY,
+        "Content-Type": "image/jpeg",
+    }
+    response = httpx.post(upload_url, headers=headers, content=optimized_bytes, timeout=15.0)
+    response.raise_for_status()
+
+    logger.info(f"Uploaded image to Supabase Storage: {filename}")
+    return f"{settings.SUPABASE_URL.rstrip('/')}/storage/v1/object/public/{settings.SUPABASE_STORAGE_BUCKET}/{filename}"
+
 def upload_product_image(image_bytes: bytes, filename_prefix: str = "product") -> str:
     """
-    Uploads optimized image to Cloudflare R2 bucket.
-    If R2 credentials are not set, falls back to saving locally and returns a local server path.
+    Uploads optimized image to Supabase Storage or Cloudflare R2, preferring Supabase
+    when configured. If neither is set, falls back to saving locally and returns a
+    local server path.
     """
     optimized_bytes = optimize_image(image_bytes)
     filename = f"{filename_prefix}_{uuid.uuid4().hex}.jpg"
+
+    # Prefer Supabase Storage when configured
+    if settings.SUPABASE_URL and settings.SUPABASE_SERVICE_KEY:
+        try:
+            return upload_to_supabase(optimized_bytes, filename)
+        except Exception as e:
+            logger.error(f"Supabase Storage upload failed: {str(e)}")
+            if settings.ENV == "production":
+                raise RuntimeError(f"Failed to upload product image to Supabase Storage: {str(e)}")
+            # Fall through to local storage below
 
     # Fallback to local files if credentials are not configured
     if not (settings.R2_ACCESS_KEY_ID and settings.R2_SECRET_ACCESS_KEY and settings.R2_ENDPOINT_URL):

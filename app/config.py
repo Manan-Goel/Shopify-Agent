@@ -35,6 +35,11 @@ class Settings(BaseSettings):
     R2_ENDPOINT_URL: str = Field(default="", env="R2_ENDPOINT_URL")
     R2_PUBLIC_URL_PREFIX: str = Field(default="", env="R2_PUBLIC_URL_PREFIX") # e.g. https://pub-xxx.r2.dev
 
+    # Supabase Storage (alternative to R2 - used when R2 credentials are blank)
+    SUPABASE_URL: str = Field(default="", env="SUPABASE_URL")
+    SUPABASE_SERVICE_KEY: str = Field(default="", env="SUPABASE_SERVICE_KEY")
+    SUPABASE_STORAGE_BUCKET: str = Field(default="shopify-listing-media", env="SUPABASE_STORAGE_BUCKET")
+
     @property
     def admin_phone_whitelist(self) -> List[str]:
         return [p.strip() for p in self.ADMIN_PHONE_WHITELIST_RAW.split(",") if p.strip()]

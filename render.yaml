@@ -37,16 +37,12 @@ services:
         sync: false
       - key: OPENROUTER_API_KEY
         sync: false
-      - key: R2_ACCESS_KEY_ID
+      - key: SUPABASE_URL
         sync: false
-      - key: R2_SECRET_ACCESS_KEY
+      - key: SUPABASE_SERVICE_KEY
         sync: false
-      - key: R2_BUCKET_NAME
-        sync: false
-      - key: R2_ENDPOINT_URL
-        sync: false
-      - key: R2_PUBLIC_URL_PREFIX
-        sync: false
+      - key: SUPABASE_STORAGE_BUCKET
+        value: shopify-listing-media
 
   - type: keyvalue
     name: shopify-agent-redis

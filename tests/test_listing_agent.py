@@ -209,15 +209,21 @@ def test_storage_production_raises_without_r2_config():
     settings.R2_ACCESS_KEY_ID = ""
     settings.R2_SECRET_ACCESS_KEY = ""
     settings.R2_ENDPOINT_URL = ""
-    
+    supabase_url = settings.SUPABASE_URL
+    supabase_key = settings.SUPABASE_SERVICE_KEY
+    settings.SUPABASE_URL = ""
+    settings.SUPABASE_SERVICE_KEY = ""
+
     small_image = Image.new("RGB", (400, 300))
     buffer = io.BytesIO()
     small_image.save(buffer, format="JPEG")
     raw_bytes = buffer.getvalue()
-    
+
     from app.storage import upload_product_image
     with pytest.raises(RuntimeError, match="credentials must be fully configured"):
         upload_product_image(raw_bytes, "test_product")
-    
+
     # Restore for subsequent tests
     settings.ENV = "development"
+    settings.SUPABASE_URL = supabase_url
+    settings.SUPABASE_SERVICE_KEY = supabase_key
