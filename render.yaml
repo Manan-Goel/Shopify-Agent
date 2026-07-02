@@ -1,0 +1,60 @@
+services:
+  - type: web
+    name: shopify-agent-web
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: shopify-agent-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: shopify-agent-redis
+          property: connectionString
+      - key: SHOPIFY_API_VERSION
+        value: "2024-07"
+      - key: ADMIN_PHONE_WHITELIST
+        sync: false
+      - key: WHATSAPP_VERIFY_TOKEN
+        sync: false
+      - key: WHATSAPP_APP_SECRET
+        sync: false
+      - key: WHATSAPP_ACCESS_TOKEN
+        sync: false
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: SHOPIFY_STORE_URL
+        sync: false
+      - key: SHOPIFY_ACCESS_TOKEN
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET_NAME
+        sync: false
+      - key: R2_ENDPOINT_URL
+        sync: false
+      - key: R2_PUBLIC_URL_PREFIX
+        sync: false
+
+  - type: keyvalue
+    name: shopify-agent-redis
+    plan: free
+    ipAllowList: []
+
+databases:
+  - name: shopify-agent-db
+    plan: free
+    databaseName: shopify_listing
+    user: shopify_agent
